@@ -6,6 +6,7 @@ import (
 	"gin-demo/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/gomodule/redigo/redis"
+	"net/http"
 )
 
 var rds redis.Conn
@@ -58,7 +59,6 @@ func login(c *gin.Context) {
 func UserName(c *gin.Context) {
 	rds = dao.RedisPOllInit().Get()
 	username, _ := redis.String(rds.Do("lrange", "username", 0, -1))
-	println(username)
 	if len(username) <= 0 { //列表中没有
 		println("缓存中查询不到")
 		name := dao.Username()
@@ -71,5 +71,14 @@ func UserName(c *gin.Context) {
 				rds.Do("expire", "username", 10)
 			}
 		}
+		c.JSON(http.StatusOK, gin.H{
+			"status":  200,
+			"message": name,
+		})
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  200,
+			"message": username,
+		})
 	}
 }
